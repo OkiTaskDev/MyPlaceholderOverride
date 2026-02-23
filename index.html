@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MPO Config Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --amber:      #f59e0b;
+  --amber-dim:  rgba(245,158,11,0.12);
+  --amber-glow: rgba(245,158,11,0.25);
+  --green:      #10b981;
+  --green-dim:  rgba(16,185,129,0.1);
+  --red:        #ef4444;
+  --red-dim:    rgba(239,68,68,0.1);
+  --sky:        #38bdf8;
+  --bg:         #0a0b0d;
+  --bg2:        #0f1114;
+  --surface:    #13151a;
+  --surface2:   #191c24;
+  --border:     #22262f;
+  --border2:    #2d323e;
+  --text:       #e2e4ec;
+  --text2:      #7b8197;
+  --text3:      #404658;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Syne', sans-serif;
+  --trans: 0.16s ease;
+}
+
+html { scroll-padding-top: 72px; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  background-image: radial-gradient(circle, #22262f 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+  );
+}
+
+.header {
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,11,13,0.97);
+  backdrop-filter: blur(16px);
+  padding: 0 32px;
+  display: flex; align-items: stretch; gap: 0;
+  height: 56px;
+}
+
+.header-brand {
+  display: flex; align-items: center; gap: 14px;
+  border-right: 1px solid var(--border);
+  padding-right: 24px; margin-right: 24px;
+}
+
+.brand-badge {
+  background: var(--amber);
+  color: #000;
+  font-family: var(--mono);
+  font-size: 0.65rem; font-weight: 700;
+  padding: 4px 8px;
+  letter-spacing: 1px;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 100%, 6px 100%);
+}
+
+.brand-name {
+  font-family: var(--sans);
+  font-size: 0.88rem; font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.header-path {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--text3); flex: 1;
+}
+.header-path .seg { color: var(--text2); }
+.header-path .seg.active { color: var(--amber); }
+.header-path .sep { color: var(--text3); }
+
+.header-actions {
+  display: flex; align-items: center; gap: 8px;
+  margin-left: auto;
+}
+
+.hbtn {
+  height: 32px; padding: 0 12px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: border-color var(--trans), color var(--trans), background var(--trans);
+  letter-spacing: 0.5px;
+}
+.hbtn:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+.hbtn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+.hero {
+  position: relative; z-index: 1;
+  padding: 64px 32px 72px;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: -60px; left: -60px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.hero-inner { max-width: 760px; position: relative; z-index: 1; }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
+  color: var(--amber); letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.hero-eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--amber); }
+
+.hero h1 {
+  font-family: var(--sans);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800; line-height: 1.05;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+.hero h1 .hi { color: var(--amber); }
+.hero h1 .lo { color: var(--text3); font-weight: 600; }
+
+.hero-desc {
+  font-family: var(--mono); font-size: 0.82rem;
+  color: var(--text2); line-height: 1.75;
+  max-width: 520px; margin-bottom: 40px;
+}
+
+.hero-steps { display: flex; gap: 0; border: 1px solid var(--border2); width: fit-content; }
+.hero-step {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  border-right: 1px solid var(--border2);
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+  color: var(--text3);
+  transition: color 0.3s;
+}
+.hero-step:last-child { border-right: none; }
+.hero-step .n {
+  width: 18px; height: 18px; flex-shrink: 0;
+  background: var(--border2); color: var(--text3);
+  font-size: 0.6rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.3s, color 0.3s;
+}
+.hero-step.done .n { background: var(--green); color: #000; }
+.hero-step.done { color: var(--green); }
+.hero-step.now .n { background: var(--amber); color: #000; }
+.hero-step.now { color: var(--amber); }
+
+/* ─── MAIN LAYOUT ─────────────────────────────────── */
+.main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 32px 100px;
+  position: relative; z-index: 1;
+}
+
+/* ─── SECTION ─────────────────────────────────────── */
+.section {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 2px;
+  transition: border-color var(--trans);
+}
+.section + .section { border-top: none; }
+.section:first-child { border-top: 1px solid var(--border); }
+
+.section-header {
+  display: flex; align-items: center; gap: 0;
+  cursor: pointer; user-select: none; min-height: 56px;
+}
+.section-header:hover .sh-title { color: var(--amber); }
+
+.sh-num {
+  width: 56px; height: 56px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 0.75rem; font-weight: 700;
+  color: var(--text3);
+  border-right: 1px solid var(--border);
+  background: var(--bg2);
+  transition: color var(--trans), background var(--trans);
+}
+.section.open .sh-num { color: var(--amber); background: var(--amber-dim); }
+
+.sh-content { flex: 1; padding: 0 20px; }
+.sh-title { font-size: 0.88rem; font-weight: 700; color: var(--text); transition: color var(--trans); }
+.sh-sub { font-family: var(--mono); font-size: 0.68rem; color: var(--text3); margin-top: 2px; }
+
+.sh-right {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px; border-left: 1px solid var(--border); height: 56px;
+}
+
+.sh-badge {
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+  color: var(--amber); background: var(--amber-dim);
+  padding: 3px 8px; letter-spacing: 0.5px;
+}
+
+.sh-arrow {
+  width: 20px; height: 20px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); font-size: 0.55rem;
+  transition: transform var(--trans), color var(--trans);
+}
+.section.open .sh-arrow { transform: rotate(180deg); color: var(--amber); }
+
+.section-body {
+  display: none; padding: 28px;
+  border-top: 1px solid var(--border);
+  animation: fadeIn 0.2s ease;
+}
+.section.open .section-body { display: block; }
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─── NOTICE ──────────────────────────────────────── */
+.notice {
+  display: flex; gap: 12px;
+  padding: 12px 16px; margin-bottom: 24px;
+  border-left: 2px solid;
+  font-family: var(--mono); font-size: 0.75rem; font-weight: 500;
+  line-height: 1.65;
+}
+.notice-info  { border-color: var(--sky);   background: rgba(56,189,248,0.05);  color: rgba(56,189,248,0.8); }
+.notice-tip   { border-color: var(--green); background: var(--green-dim);        color: rgba(16,185,129,0.85); }
+.notice-warn  { border-color: var(--amber); background: var(--amber-dim);         color: rgba(245,158,11,0.9); }
+.notice-err   { border-color: var(--red);   background: var(--red-dim);           color: #f87171; }
+.notice strong { font-weight: 700; }
+.notice code { background: rgba(255,255,255,0.07); padding: 1px 5px; font-family: var(--mono); font-size: 0.72rem; }
+
+/* ─── DIVIDER LABEL ───────────────────────────────── */
+.dlabel {
+  font-family: var(--mono); font-size: 0.63rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 2.5px;
+  color: var(--text3);
+  display: flex; align-items: center; gap: 12px;
+  margin: 28px 0 14px;
+}
+.dlabel::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.dlabel:first-child { margin-top: 0; }
+
+/* ─── FORM FIELDS ─────────────────────────────────── */
+.field { margin-bottom: 18px; }
+.field:last-child { margin-bottom: 0; }
+
+.field-label { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.field-label strong { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+
+.tag { font-family: var(--mono); font-size: 0.58rem; font-weight: 600; padding: 2px 6px; letter-spacing: 0.5px; }
+.tag-req { background: rgba(239,68,68,0.12); color: #f87171; }
+.tag-opt { background: var(--border); color: var(--text3); }
+
+.field-hint { font-family: var(--mono); font-size: 0.72rem; color: var(--text2); margin-bottom: 8px; line-height: 1.6; }
+
+.field input, .field select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  padding: 10px 13px;
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 500;
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--trans), box-shadow var(--trans);
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px var(--amber-dim);
+}
+.field input.mono { font-family: var(--mono); }
+.field select option { background: var(--surface2); }
+.field input::placeholder { color: var(--text3); }
+
+.field-note { margin-top: 6px; font-family: var(--mono); font-size: 0.67rem; color: var(--text3); }
+.field-note code { background: var(--surface2); border: 1px solid var(--border); color: var(--amber); font-family: var(--mono); padding: 1px 5px; font-size: 0.65rem; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:580px){ .grid2 { grid-template-columns: 1fr; } }
+
+/* ─── TOGGLE SWITCH ───────────────────────────────── */
+.toggle-row {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg); border: 1px solid var(--border2);
+  padding: 13px 16px; cursor: pointer; margin-bottom: 12px;
+  transition: border-color var(--trans), background var(--trans);
+}
+.toggle-row:hover { background: var(--surface2); }
+.toggle-row.on { border-color: rgba(16,185,129,0.35); background: rgba(16,185,129,0.04); }
+.toggle-info { flex: 1; }
+.toggle-info strong { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text); }
+.toggle-info span { font-family: var(--mono); font-size: 0.7rem; color: var(--text2); margin-top: 3px; display: block; }
+input[type=checkbox] { display: none; }
+.sw { width: 38px; height: 20px; background: var(--border2); position: relative; flex-shrink: 0; transition: background var(--trans); }
+.sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; background: var(--text3); transition: transform var(--trans), background var(--trans); }
+.toggle-row.on .sw { background: rgba(16,185,129,0.3); }
+.toggle-row.on .sw::after { transform: translateX(18px); background: var(--green); }
+
+/* ─── SEARCH BAR ──────────────────────────────────── */
+.search-bar {
+  display: flex; gap: 0; margin-bottom: 16px;
+  border: 1px solid var(--border2);
+  background: var(--bg);
+  align-items: center;
+}
+.search-bar input {
+  flex: 1; background: transparent; border: none;
+  padding: 10px 14px;
+  font-family: var(--mono); font-size: 0.8rem;
+  color: var(--text); outline: none;
+}
+.search-bar input::placeholder { color: var(--text3); }
+.search-bar .search-icon { padding: 0 14px; color: var(--text3); font-size: 0.9rem; }
+.search-bar .search-count {
+  padding: 0 14px; border-left: 1px solid var(--border2);
+  font-family: var(--mono); font-size: 0.68rem; color: var(--text3);
+}
+
+/* ─── SORT BAR ────────────────────────────────────── */
+.sort-bar {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+}
+.sort-label { font-family: var(--mono); font-size: 0.62rem; color: var(--text3); padding: 0 12px; border-right: 1px solid var(--border); height: 34px; display: flex; align-items: center; }
+.sort-btn {
+  padding: 0 12px; height: 34px;
+  background: transparent; border: none; border-right: 1px solid var(--border);
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
+  color: var(--text3); cursor: pointer;
+  transition: color var(--trans), background var(--trans);
+}
+.sort-btn:last-child { border-right: none; }
+.sort-btn:hover { color: var(--amber); background: var(--amber-dim); }
+.sort-btn.active { color: var(--amber); background: var(--amber-dim); }
+
+/* ─── PRESETS GRID ────────────────────────────────── */
+.presets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1px; margin-bottom: 24px; background: var(--border); border: 1px solid var(--border); }
+.preset {
+  background: var(--surface2); padding: 16px 14px; cursor: pointer;
+  transition: background var(--trans);
+  position: relative; overflow: hidden;
+}
+.preset::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 2px; height: 0; background: var(--amber);
+  transition: height 0.2s ease;
+}
+.preset:hover { background: var(--bg2); }
+.preset:hover::before { height: 100%; }
+.preset-emoji { font-size: 1.25rem; margin-bottom: 10px; }
+.preset-name { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.preset-desc { font-family: var(--mono); font-size: 0.68rem; color: var(--text2); line-height: 1.45; }
+
+/* ─── STATS ───────────────────────────────────────── */
+.stat-row { display: flex; gap: 0; margin-bottom: 20px; border: 1px solid var(--border); background: var(--border); }
+.stat-item { flex: 1; background: var(--surface); padding: 14px 16px; }
+.stat-label { font-family: var(--mono); font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 4px; }
+.stat-value { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; color: var(--amber); }
+
+/* ─── RULES ───────────────────────────────────────── */
+.rules-empty {
+  text-align: center; padding: 48px 20px;
+  border: 1px dashed var(--border2); color: var(--text3);
+}
+.rules-empty .empty-emoji { font-size: 2rem; margin-bottom: 12px; opacity: 0.5; }
+.rules-empty p { font-family: var(--mono); font-size: 0.78rem; color: var(--text3); line-height: 1.6; }
+
+.rule-card {
+  border: 1px solid var(--border); margin-bottom: 2px;
+  background: var(--surface);
+  transition: border-color var(--trans), box-shadow var(--trans);
+  position: relative;
+  animation: slideIn 0.2s ease;
+}
+@keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+.rule-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: transparent; transition: background var(--trans);
+}
+.rule-card.open { border-color: rgba(245,158,11,0.3); }
+.rule-card.open::before { background: var(--amber); }
+.rule-card.search-hidden { display: none; }
+
+.rule-header {
+  display: flex; align-items: center; gap: 0;
+  padding: 0; cursor: pointer; user-select: none; min-height: 50px;
+}
+
+/* drag handle */
+.rule-drag {
+  width: 36px; height: 50px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); font-size: 0.7rem; cursor: grab;
+  border-right: 1px solid var(--border);
+  transition: color var(--trans), background var(--trans);
+}
+.rule-drag:hover { color: var(--text2); background: var(--surface2); }
+.rule-drag:active { cursor: grabbing; }
+.rule-card.dragging { opacity: 0.4; border-color: var(--amber); }
+.rule-card.drag-over { border-color: var(--green); border-style: dashed; }
+
+.rule-dot-col {
+  width: 50px; height: 50px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-right: 1px solid var(--border);
+}
+.rule-dot { width: 8px; height: 8px; border-radius: 0; }
+
+.rule-header-text { flex: 1; padding: 12px 16px; min-width: 0; }
+.rule-header-text strong { display: block; font-family: var(--mono); font-size: 0.8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rule-header-text span { font-family: var(--mono); font-size: 0.67rem; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin-top: 2px; }
+
+/* enabled toggle in header */
+.rule-enabled-toggle {
+  padding: 0 14px; height: 50px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 7px;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--trans);
+}
+.rule-enabled-toggle:hover { background: var(--surface2); }
+.rule-en-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); transition: background var(--trans); }
+.rule-en-dot.off { background: var(--text3); }
+.rule-en-label { font-family: var(--mono); font-size: 0.62rem; font-weight: 600; color: var(--text3); }
+
+.rule-priority-badge {
+  padding: 0 12px; height: 50px;
+  display: flex; align-items: center;
+  border-left: 1px solid var(--border);
+  font-family: var(--mono); font-size: 0.65rem; color: var(--text3);
+}
+.rule-priority-badge span { font-weight: 700; color: var(--text2); margin-left: 4px; }
+
+.rule-open-btn {
+  padding: 0 14px; height: 50px;
+  font-family: var(--mono); font-size: 0.63rem; font-weight: 600;
+  color: var(--text3); background: transparent;
+  border-left: 1px solid var(--border);
+  white-space: nowrap; letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color var(--trans), background var(--trans);
+}
+.rule-open-btn:hover { color: var(--amber); background: var(--amber-dim); }
+
+.rule-body { display: none; padding: 20px; border-top: 1px solid var(--border); background: var(--bg2); }
+.rule-card.open .rule-body { display: block; animation: fadeIn 0.15s ease; }
+
+/* ─── DISABLED RULE OVERLAY ───────────────────────── */
+.rule-card.disabled { opacity: 0.5; }
+.rule-card.disabled .rule-header-text strong { text-decoration: line-through; }
+
+/* ─── RESULT PREVIEW ──────────────────────────────── */
+.result-preview {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(16,185,129,0.06); border-left: 2px solid var(--green);
+  padding: 9px 12px; margin-top: 8px;
+  font-family: var(--mono); font-size: 0.75rem; font-weight: 600; color: var(--green);
+}
+.result-preview code { font-family: var(--mono); font-size: 0.8rem; }
+
+/* ─── COLOR PICKER ────────────────────────────────── */
+.color-picker-row { display: flex; gap: 6px; margin-top: 8px; }
+.color-swatch {
+  width: 22px; height: 22px; cursor: pointer; border: 2px solid transparent;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.color-swatch:hover { transform: scale(1.2); }
+.color-swatch.selected { border-color: white; transform: scale(1.1); }
+
+/* ─── LOGIC SELECTOR ──────────────────────────────── */
+.logic-row { display: flex; gap: 0; margin-bottom: 16px; border: 1px solid var(--border); }
+.logic-btn {
+  flex: 1; padding: 11px 8px;
+  background: var(--surface2); border: none; border-right: 1px solid var(--border);
+  cursor: pointer; font-family: var(--mono); font-weight: 600; font-size: 0.75rem;
+  color: var(--text2); text-align: center;
+  transition: background var(--trans), color var(--trans);
+}
+.logic-btn:last-child { border-right: none; }
+.logic-btn small { display: block; font-size: 0.62rem; font-weight: 400; margin-top: 3px; opacity: 0.7; }
+.logic-btn.sel-and { background: var(--amber-dim); color: var(--amber); }
+.logic-btn.sel-or  { background: rgba(16,185,129,0.1); color: var(--green); }
+
+/* ─── CONDITIONS ──────────────────────────────────── */
+.cond-item {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 14px; margin-bottom: 6px; position: relative;
+}
+.cond-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--border2); }
+.cond-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cond-num {
+  width: 20px; height: 20px; flex-shrink: 0;
+  background: var(--amber); color: #000;
+  font-family: var(--mono); font-size: 0.6rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.cond-head strong { font-family: var(--mono); font-size: 0.75rem; font-weight: 600; flex: 1; color: var(--text2); }
+.cond-grid { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 8px; align-items: end; margin-bottom: 10px; }
+@media(max-width:560px){ .cond-grid { grid-template-columns: 1fr; } }
+.cond-arrow { text-align: center; font-family: var(--mono); font-size: 0.8rem; color: var(--text3); padding-bottom: 10px; }
+
+.clabel { font-family: var(--mono); font-size: 0.62rem; font-weight: 600; color: var(--text3); margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+.cinput {
+  width: 100%; background: var(--bg); border: 1px solid var(--border2);
+  padding: 8px 10px; font-family: var(--mono); font-size: 0.76rem; font-weight: 500;
+  color: var(--text); outline: none;
+  transition: border-color var(--trans), box-shadow var(--trans);
+  border-radius: 0;
+}
+.cinput:focus { border-color: var(--amber); box-shadow: 0 0 0 2px var(--amber-dim); }
+.cselect {
+  width: 100%; background: var(--bg); border: 1px solid var(--border2);
+  padding: 8px 10px; font-family: var(--mono); font-size: 0.74rem; font-weight: 500;
+  color: var(--text); outline: none; transition: border-color var(--trans);
+  -webkit-appearance: none; cursor: pointer; border-radius: 0;
+}
+.cselect:focus { border-color: var(--amber); }
+.cselect option { background: var(--surface2); }
+
+/* ─── BUTTONS ─────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px;
+  font-family: var(--mono); font-weight: 600; font-size: 0.78rem;
+  cursor: pointer; border: none; border-radius: 0;
+  transition: opacity 0.15s, background var(--trans), color var(--trans), border-color var(--trans);
+  letter-spacing: 0.3px;
+}
+.btn:hover { opacity: 0.88; }
+.btn:active { opacity: 1; transform: scale(0.98); }
+.btn-primary { background: var(--amber); color: #000; }
+.btn-primary:hover { opacity: 1; background: #fbbf24; }
+.btn-success {
+  background: var(--green); color: #000;
+  width: 100%; justify-content: center;
+  padding: 15px; font-size: 0.88rem; font-weight: 700;
+  transition: background var(--trans), box-shadow var(--trans);
+}
+.btn-success:hover { opacity: 1; background: #34d399; box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+.btn-ghost:hover { border-color: var(--amber); color: var(--amber); opacity: 1; }
+.btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); padding: 6px 11px; font-size: 0.7rem; }
+.btn-danger:hover { background: rgba(239,68,68,0.18); opacity: 1; }
+.btn-dashed {
+  width: 100%; justify-content: center; padding: 12px;
+  background: transparent; border: 1px dashed var(--border2);
+  color: var(--text3); font-size: 0.78rem;
+}
+.btn-dashed:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); opacity: 1; }
+.btn-add-cond {
+  width: 100%; justify-content: center; padding: 9px;
+  background: transparent; border: 1px dashed var(--border);
+  color: var(--text3); font-size: 0.72rem; margin-top: 4px;
+}
+.btn-add-cond:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); opacity: 1; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+
+/* ─── DUPLICATE RULE ──────────────────────────────── */
+.btn-dupe { background: rgba(56,189,248,0.08); color: var(--sky); border: 1px solid rgba(56,189,248,0.2); padding: 6px 11px; font-size: 0.7rem; }
+.btn-dupe:hover { background: rgba(56,189,248,0.15); opacity: 1; }
+
+/* ─── TOOLTIP ─────────────────────────────────────── */
+.tt { position: relative; display: inline-flex; }
+.tt-i { width: 16px; height: 16px; flex-shrink: 0; background: var(--surface2); border: 1px solid var(--border2); color: var(--text3); font-size: 0.58rem; font-weight: 700; font-family: var(--mono); display: inline-flex; align-items: center; justify-content: center; cursor: help; }
+.tt-b { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); background: var(--text); color: var(--bg); font-family: var(--mono); font-size: 0.68rem; font-weight: 500; line-height: 1.55; padding: 8px 11px; width: 220px; z-index: 200; pointer-events: none; opacity: 0; transition: opacity 0.15s; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+.tt:hover .tt-b { opacity: 1; }
+
+/* ─── CODE PREVIEW ────────────────────────────────── */
+.preview-wrap { background: #080a0c; border: 1px solid var(--border); margin-bottom: 16px; overflow: hidden; }
+.preview-bar { background: rgba(255,255,255,0.02); padding: 8px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.preview-dots { display: flex; gap: 5px; }
+.preview-dots span { width: 9px; height: 9px; border-radius: 50%; }
+.d1{background:#ff5f57} .d2{background:#febc2e} .d3{background:#28c840}
+.preview-fname { font-family: var(--mono); font-size: 0.66rem; color: #4b5563; margin-left: 6px; }
+.preview-live { margin-left: auto; font-family: var(--mono); font-size: 0.62rem; font-weight: 600; color: var(--green); display: flex; align-items: center; gap: 4px; }
+.preview-live::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink 1.4s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+.preview-actions { display: flex; align-items: center; gap: 8px; margin-left: 12px; }
+.preview-copy-btn { font-family: var(--mono); font-size: 0.62rem; font-weight: 600; color: var(--text3); background: transparent; border: 1px solid var(--border2); padding: 3px 8px; cursor: pointer; transition: color var(--trans), border-color var(--trans); }
+.preview-copy-btn:hover { color: var(--amber); border-color: var(--amber); }
+.preview-code { padding: 16px; font-family: var(--mono); font-size: 0.7rem; line-height: 1.9; color: #4b5563; max-height: 340px; overflow-y: auto; white-space: pre; }
+.y-key{color:#60a5fa} .y-str{color:#fbbf24} .y-num{color:#fb923c} .y-t{color:#34d399} .y-f{color:#f87171} .y-com{color:#2d3748}
+
+/* ─── TABS ────────────────────────────────────────── */
+.tab-row { display: flex; gap: 0; border: 1px solid var(--border); margin-bottom: 16px; }
+.tab-btn {
+  flex: 1; padding: 10px; background: var(--bg2);
+  border: none; border-right: 1px solid var(--border);
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+  color: var(--text3); cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.tab-btn:last-child { border-right: none; }
+.tab-btn.active { background: var(--amber-dim); color: var(--amber); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ─── INSTALL BOX ─────────────────────────────────── */
+.install-box { background: rgba(245,158,11,0.06); border-left: 2px solid var(--amber); padding: 13px 16px; margin-bottom: 20px; font-family: var(--mono); font-size: 0.75rem; color: rgba(245,158,11,0.85); line-height: 1.65; }
+.install-box strong { font-weight: 700; }
+.install-box code { background: rgba(255,255,255,0.07); padding: 1px 5px; font-family: var(--mono); font-size: 0.7rem; }
+
+/* ─── IMPORT ZONE ─────────────────────────────────── */
+.import-zone {
+  border: 2px dashed var(--border2); padding: 32px 20px; text-align: center;
+  cursor: pointer; transition: border-color var(--trans), background var(--trans);
+  margin-bottom: 16px;
+}
+.import-zone:hover, .import-zone.drag-active { border-color: var(--amber); background: var(--amber-dim); }
+.import-zone p { font-family: var(--mono); font-size: 0.78rem; color: var(--text3); margin-top: 8px; }
+.import-zone .iz-icon { font-size: 1.8rem; }
+
+/* ─── PROGRESS BAR ────────────────────────────────── */
+.progress-bar-wrap { background: var(--border); height: 2px; margin-bottom: 32px; }
+.progress-bar-fill { height: 2px; background: var(--amber); transition: width 0.5s ease; }
+
+/* ─── TOAST ───────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  padding: 11px 18px;
+  font-family: var(--mono); font-weight: 700; font-size: 0.78rem; z-index: 9999;
+  transform: translateY(60px); opacity: 0;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  display: flex; align-items: center; gap: 8px;
+  pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-success { background: var(--green); color: #000; box-shadow: 0 8px 24px rgba(16,185,129,0.3); }
+.toast-info { background: var(--sky); color: #000; box-shadow: 0 8px 24px rgba(56,189,248,0.3); }
+.toast-warn { background: var(--amber); color: #000; box-shadow: 0 8px 24px rgba(245,158,11,0.3); }
+
+/* ─── KEYBOARD SHORTCUTS ──────────────────────────── */
+.kbd { font-family: var(--mono); font-size: 0.6rem; background: var(--surface2); border: 1px solid var(--border2); padding: 2px 5px; color: var(--text3); }
+
+/* ─── SCROLLBAR ───────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+@media(max-width:680px){
+  .hero { padding: 44px 20px 56px; }
+  .hero h1 { font-size: 2rem; letter-spacing: -1px; }
+  .hero-steps { flex-wrap: wrap; }
+  .hero-step { flex: 1; min-width: 120px; }
+  .main { padding: 24px 16px 80px; }
+  .presets-grid { grid-template-columns: 1fr 1fr; }
+  .stat-row { flex-wrap: wrap; }
+  .rule-priority-badge { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <div class="brand-badge">MPO</div>
+    <span class="brand-name">Config Builder</span>
+  </div>
+  <div class="header-path">
+    <span class="seg active">~/plugins</span>
+    <span class="sep">/</span>
+    <span class="seg active">MyPlaceholderOverride</span>
+    <span class="sep">/</span>
+    <span class="seg">config.yml</span>
+  </div>
+  <div class="header-actions">
+    <button class="hbtn" onclick="clearAll()" title="Clear all rules">✕ CLEAR</button>
+    <button class="hbtn" onclick="openImportModal()" title="Import existing config">↑ IMPORT</button>
+    <button class="hbtn" onclick="copyYAML()">⎘ COPY</button>
+    <button class="hbtn" onclick="downloadYAML()">⬇ DOWNLOAD</button>
+  </div>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progressBar" style="width:33%"></div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Config Builder</div>
+    <h1>Build your <span class="hi">config.yml</span><br><span class="lo">without touching code</span></h1>
+    <p class="hero-desc">// Configure MyPlaceholderOverride visually, step by step.<br>// Download your file and drop it on the server — done.</p>
+    <div class="hero-steps">
+      <div class="hero-step now" id="ps1"><div class="n">01</div>Settings</div>
+      <div class="hero-step" id="ps2"><div class="n">02</div>Rules</div>
+      <div class="hero-step" id="ps3"><div class="n">03</div>Download</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="section open" id="cardSettings">
+    <div class="section-header" onclick="toggleCard('cardSettings')">
+      <div class="sh-num">01</div>
+      <div class="sh-content">
+        <div class="sh-title">General Settings</div>
+        <div class="sh-sub">// cache · debug · storage — defaults work for most servers</div>
+      </div>
+      <div class="sh-right">
+        <div class="sh-arrow">▼</div>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="notice notice-info">
+        <div>💡 <strong>New to this?</strong> The default values work great for most servers. Skip this section and go straight to <strong>Step 02 → Rules</strong>.</div>
+      </div>
+
+      <div class="dlabel">Cache</div>
+      <div class="grid2">
+        <div class="field">
+          <div class="field-label">
+            <strong>Cache TTL</strong>
+            <span class="tag tag-opt">seconds</span>
+            <div class="tt"><div class="tt-i">?</div><div class="tt-b">How long the plugin remembers a placeholder value before recalculating it. Higher = faster server, but slower to reflect changes.</div></div>
+          </div>
+          <div class="field-hint">How long values are cached. 5 seconds is ideal for most servers.</div>
+          <input type="number" id="cacheTtl" value="5" min="1" max="3600">
+          <div class="field-note">Recommended: <code>5</code> &nbsp;·&nbsp; Large servers: <code>10–30</code></div>
+        </div>
+        <div class="field">
+          <div class="field-label">
+            <strong>Max cache entries / player</strong>
+            <div class="tt"><div class="tt-i">?</div><div class="tt-b">How many different placeholder values are remembered per player. 100 is more than enough for most setups.</div></div>
+          </div>
+          <div class="field-hint">Values held in memory per player. 100 is fine for almost everyone.</div>
+          <input type="number" id="cacheMax" value="100" min="10" max="10000">
+          <div class="field-note">Recommended: <code>100</code></div>
+        </div>
+      </div>
+
+      <div class="dlabel">Debug</div>
+      <div class="toggle-row" id="togDebug" onclick="toggleCheck('cbDebug','togDebug')">
+        <div class="toggle-info">
+          <strong>Debug Mode</strong>
+          <span>Logs extra info to the server console. Useful for troubleshooting — keep off in production.</span>
+        </div>
+        <div class="sw"></div>
+        <input type="checkbox" id="cbDebug">
+      </div>
+
+      <div class="dlabel">Storage <span style="font-size:0.62rem;color:var(--text3);text-transform:none;letter-spacing:0;font-weight:400;margin-left:4px">— advanced users only</span></div>
+      <div class="toggle-row" id="togMySQL" onclick="toggleCheck('cbMySQL','togMySQL');toggleMySQLSection()">
+        <div class="toggle-info">
+          <strong>Use MySQL instead of YAML</strong>
+          <span>Store rules in a database. Leave this off unless you know what MySQL is.</span>
+        </div>
+        <div class="sw"></div>
+        <input type="checkbox" id="cbMySQL">
+      </div>
+
+      <div id="mysqlSection" style="display:none; background:var(--bg); border:1px solid var(--border); padding:18px; margin-top:-8px; margin-bottom:12px;">
+        <div class="grid2">
+          <div class="field"><div class="field-label"><strong>Host</strong></div><input type="text" id="mysqlHost" value="localhost" class="mono"></div>
+          <div class="field"><div class="field-label"><strong>Port</strong></div><input type="number" id="mysqlPort" value="3306"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><div class="field-label"><strong>Database name</strong></div><input type="text" id="mysqlDb" value="placeholderoverride" class="mono"></div>
+          <div class="field"><div class="field-label"><strong>Username</strong></div><input type="text" id="mysqlUser" value="root" class="mono"></div>
+        </div>
+        <div class="field"><div class="field-label"><strong>Password</strong></div><input type="password" id="mysqlPass" placeholder="Leave empty if none"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section open" id="cardRules">
+    <div class="section-header" onclick="toggleCard('cardRules')">
+      <div class="sh-num">02</div>
+      <div class="sh-content">
+        <div class="sh-title">Rules</div>
+        <div class="sh-sub">// what to show instead of a placeholder value, based on conditions</div>
+      </div>
+      <div class="sh-right">
+        <div class="sh-badge" id="ruleCountBadge" style="display:none">0 rules</div>
+        <div class="sh-arrow">▼</div>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="notice notice-info">
+        <div>🎯 <strong>How it works:</strong> A rule says — <em>"If placeholder X equals Y → return Z instead."</em> Then use <code>%override_yourplaceholder%</code> in your plugins (e.g. <code>%player_health%</code> → <code>%override_player_health%</code>).</div>
+      </div>
+
+      <div class="stat-row" id="statRow" style="display:none">
+        <div class="stat-item"><div class="stat-label">Active Rules</div><div class="stat-value" id="statRules">0</div></div>
+        <div class="stat-item"><div class="stat-label">Conditions</div><div class="stat-value" id="statConds">0</div></div>
+        <div class="stat-item"><div class="stat-label">Placeholders</div><div class="stat-value" id="statPhs">0</div></div>
+        <div class="stat-item"><div class="stat-label">Disabled</div><div class="stat-value" id="statDisabled">0</div></div>
+      </div>
+
+      <div class="dlabel">Start from a template</div>
+      <div class="presets-grid">
+        <div class="preset" onclick="addPreset('health')"><div class="preset-emoji">❤️</div><div class="preset-name">Critical Health</div><div class="preset-desc">Show "CRITICAL" when player health drops below 5</div></div>
+        <div class="preset" onclick="addPreset('balance')"><div class="preset-emoji">💰</div><div class="preset-name">Rich Player</div><div class="preset-desc">Show "Rich" when Vault balance exceeds 10,000</div></div>
+        <div class="preset" onclick="addPreset('nether')"><div class="preset-emoji">🌋</div><div class="preset-name">Nether World</div><div class="preset-desc">Show "Inferno" while the player is in the Nether</div></div>
+        <div class="preset" onclick="addPreset('vip')"><div class="preset-emoji">👑</div><div class="preset-name">VIP Rank</div><div class="preset-desc">Show "VIP" if LuckPerms primary group is "vip"</div></div>
+        <div class="preset" onclick="addPreset('level')"><div class="preset-emoji">⭐</div><div class="preset-name">High Level</div><div class="preset-desc">Show "Veteran" when XP level exceeds 30</div></div>
+        <div class="preset" onclick="addPreset('blank')"><div class="preset-emoji">➕</div><div class="preset-name">Blank Rule</div><div class="preset-desc">Start from scratch and build a custom rule</div></div>
+      </div>
+
+      <div class="dlabel">Your rules</div>
+
+      <div id="rulesToolbar" style="display:none">
+        <div class="search-bar">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="searchRules" placeholder="Search rules by key or placeholder…" oninput="filterRules(this.value)">
+          <div class="search-count" id="searchCount"></div>
+        </div>
+        <div class="sort-bar">
+          <div class="sort-label">SORT</div>
+          <button class="sort-btn active" id="sortDefault" onclick="sortRules('default')">Default</button>
+          <button class="sort-btn" id="sortAlpha" onclick="sortRules('alpha')">A→Z</button>
+          <button class="sort-btn" id="sortPriority" onclick="sortRules('priority')">Priority ↓</button>
+          <button class="sort-btn" id="sortConds" onclick="sortRules('conds')">Conditions</button>
+        </div>
+      </div>
+
+      <div id="rulesList"></div>
+      <button class="btn btn-dashed" onclick="addRule()">＋ Add new rule</button>
+      <div style="margin-top:8px; font-family:var(--mono); font-size:0.65rem; color:var(--text3)">
+        Tip: <span class="kbd">Ctrl+Z</span> to undo last delete &nbsp;·&nbsp; <span class="kbd">Drag</span> handle to reorder
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section open" id="cardDownload">
+    <div class="section-header" onclick="toggleCard('cardDownload')">
+      <div class="sh-num">03</div>
+      <div class="sh-content">
+        <div class="sh-title">Download & Install</div>
+        <div class="sh-sub">// live preview of your config file</div>
+      </div>
+      <div class="sh-right">
+        <div class="sh-arrow">▼</div>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="install-box">
+        📂 <strong>How to install:</strong> Download the file → place it in <strong>plugins/MyPlaceholderOverride/</strong> on your server → run <code>/mpo reload</code> in-game or in the console.
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab('preview')">Preview</button>
+        <button class="tab-btn" onclick="switchTab('validate')">Validate</button>
+        <button class="tab-btn" onclick="switchTab('import')">Import</button>
+      </div>
+
+      <div class="tab-panel active" id="tabPreview">
+        <div class="preview-wrap">
+          <div class="preview-bar">
+            <div class="preview-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+            <div class="preview-fname">config.yml</div>
+            <div class="preview-live">LIVE</div>
+            <div class="preview-actions">
+              <button class="preview-copy-btn" onclick="copyYAML()">⎘ COPY</button>
+            </div>
+          </div>
+          <pre class="preview-code" id="previewCode"></pre>
+        </div>
+        <button class="btn btn-success" onclick="downloadYAML()">⬇ Download config.yml</button>
+      </div>
+
+      <div class="tab-panel" id="tabValidate">
+        <div id="validateResults"></div>
+        <button class="btn btn-primary" onclick="validateConfig()" style="margin-top:8px">▶ Run Validation</button>
+      </div>
+
+      <div class="tab-panel" id="tabImport">
+        <div class="notice notice-warn">
+          <div>⚠ <strong>This will replace all current rules.</strong> Make sure to download your current config first if you want to keep it.</div>
+        </div>
+        <div class="import-zone" id="importZone" onclick="document.getElementById('importFile').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div class="iz-icon">📄</div>
+          <p><strong>Click to upload</strong> or drag &amp; drop a <code>config.yml</code> here</p>
+          <p style="margin-top:4px;opacity:0.6">Supported: .yml, .yaml</p>
+        </div>
+        <input type="file" id="importFile" accept=".yml,.yaml" style="display:none" onchange="importFromFile(event)">
+        <div style="margin-top:8px">
+          <div class="dlabel">Or paste YAML</div>
+          <textarea id="importPaste" style="width:100%; height:120px; background:var(--bg); border:1px solid var(--border2); color:var(--text); font-family:var(--mono); font-size:0.72rem; padding:10px; outline:none; resize:vertical; border-radius:0; transition:border-color var(--trans), box-shadow var(--trans);" placeholder="Paste your config.yml content here…" onfocus="this.style.borderColor='var(--amber)';this.style.boxShadow='0 0 0 2px var(--amber-dim)'" onblur="this.style.borderColor='';this.style.boxShadow=''"></textarea>
+          <button class="btn btn-primary" style="margin-top:8px" onclick="importFromPaste()">↑ Import from paste</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="toast toast-success" id="toast"></div>
+
+<div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border2);padding:28px;max-width:400px;width:90%;">
+    <div style="font-size:0.9rem;font-weight:700;margin-bottom:8px;" id="modalTitle">Confirm</div>
+    <div style="font-family:var(--mono);font-size:0.76rem;color:var(--text2);margin-bottom:20px;" id="modalMsg">Are you sure?</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-danger" id="modalConfirm">Confirm</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let rules = [], ruleId = 0;
+let deletedRuleStack = [];
+let dragSrcId = null;
+let currentSort = 'default';
+
+const COLORS = ['#f59e0b','#6366f1','#10b981','#a855f7','#ec4899','#eab308','#14b8a6','#ef4444'];
+const COND_TYPES = [
+  {v:'equals',            l:'= Equals (text)'},
+  {v:'not_equals',        l:'≠ Does not equal (text)'},
+  {v:'contains',          l:'⊃ Contains word'},
+  {v:'not_contains',      l:'⊄ Does not contain word'},
+  {v:'greater_than',      l:'> Greater than (number)'},
+  {v:'less_than',         l:'< Less than (number)'},
+  {v:'number_equals',     l:'= Exactly equals (number)'},
+  {v:'number_not_equals', l:'≠ Does not equal (number)'},
+];
+
+const PRESETS = {
+  health:  {key:'critical_health',  placeholder:'%player_health%',           priority:10, logic:'and', returnValue:'❤ CRITICAL',  conditions:[{p:'',type:'less_than',   val:'5'}]},
+  balance: {key:'rich_player',      placeholder:'%vault_balance%',           priority:5,  logic:'and', returnValue:'💰 Rich',      conditions:[{p:'',type:'greater_than', val:'10000'}]},
+  nether:  {key:'nether_world',     placeholder:'%player_world%',            priority:5,  logic:'and', returnValue:'🔥 Inferno',   conditions:[{p:'%player_world%',type:'contains',val:'nether'}]},
+  vip:     {key:'vip_rank',         placeholder:'%luckperms_primary_group%', priority:10, logic:'and', returnValue:'👑 VIP',       conditions:[{p:'%luckperms_primary_group%',type:'equals',val:'vip'}]},
+  level:   {key:'veteran_level',    placeholder:'%player_level%',            priority:5,  logic:'and', returnValue:'⭐ Veteran',   conditions:[{p:'',type:'greater_than', val:'30'}]},
+  blank:   {key:'my_rule',          placeholder:'%player_name%',             priority:0,  logic:'and', returnValue:'Custom Value', conditions:[{p:'',type:'equals',val:''}]},
+};
+
+function addPreset(type) {
+  const p = PRESETS[type];
+  const id = ++ruleId;
+  rules.push({
+    id, open:true, ci:rules.length % COLORS.length,
+    key:p.key, placeholder:p.placeholder, priority:p.priority,
+    logic:p.logic, returnValue:p.returnValue, enabled:true,
+    conditions: p.conditions.map(c=>({placeholder:c.p, type:c.type, value:c.val}))
+  });
+  renderRules(); updatePreview();
+  setTimeout(() => document.getElementById('rc_'+id)?.scrollIntoView({behavior:'smooth',block:'nearest'}), 60);
+}
+function addRule() { addPreset('blank'); }
+
+function toggleCard(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function toggleCheck(cbId, rowId) {
+  const cb = document.getElementById(cbId);
+  cb.checked = !cb.checked;
+  document.getElementById(rowId).classList.toggle('on', cb.checked);
+  updatePreview();
+}
+function toggleMySQLSection() {
+  document.getElementById('mysqlSection').style.display =
+    document.getElementById('cbMySQL').checked ? 'block' : 'none';
+}
+
+function toggleRule(id) {
+  const r = rules.find(x => x.id === id); if(!r) return;
+  r.open = !r.open;
+  const el = document.getElementById('rc_'+id);
+  if(el) {
+    el.classList.toggle('open', r.open);
+    const btn = el.querySelector('.rule-open-btn');
+    if(btn) btn.textContent = r.open ? 'COLLAPSE ▲' : 'EXPAND ▼';
+  }
+}
+
+function toggleRuleEnabled(id, e) {
+  e.stopPropagation();
+  const r = rules.find(x => x.id === id); if(!r) return;
+  r.enabled = !r.enabled;
+  const el = document.getElementById('rc_'+id);
+  if(el) {
+    el.classList.toggle('disabled', !r.enabled);
+    const dot = el.querySelector('.rule-en-dot');
+    const lbl = el.querySelector('.rule-en-label');
+    if(dot) { dot.className = 'rule-en-dot' + (r.enabled ? '' : ' off'); }
+    if(lbl) lbl.textContent = r.enabled ? 'ON' : 'OFF';
+  }
+  updateStats(); updatePreview();
+  showToast(r.enabled ? '✓ Rule enabled' : '○ Rule disabled', 'info');
+}
+
+function upRule(id, key, val) {
+  const r = rules.find(x => x.id === id); if(!r) return;
+  r[key] = key === 'priority' ? (parseInt(val)||0) : val;
+  if(key === 'returnValue') {
+    const hasReturn = val.trim() !== '';
+    const prev = document.querySelector('[data-rrp="'+id+'"]');
+    if(prev) { prev.style.display = hasReturn ? 'flex' : 'none'; prev.querySelector('code').textContent = val; }
+  }
+  if(key === 'key' || key === 'placeholder') {
+    const el = document.getElementById('rc_'+id);
+    if(el) {
+      const s = el.querySelector('.rule-header-text strong');
+      const sp = el.querySelector('.rule-header-text span');
+      if(s && key === 'key') s.textContent = val || 'my_rule';
+      if(sp && key === 'placeholder') sp.textContent = val || '—';
+    }
+  }
+  if(key === 'priority') {
+    const el = document.getElementById('rc_'+id);
+    if(el) {
+      const pb = el.querySelector('.rule-priority-badge span');
+      if(pb) pb.textContent = val;
+    }
+  }
+  updateStats(); updatePreview();
+}
+
+function setLogic(id, val) {
+  const r = rules.find(x => x.id === id); if(!r) return;
+  r.logic = val;
+  const body = document.getElementById('rc_'+id)?.querySelector('.rule-body');
+  if(!body) return;
+  const btns = body.querySelectorAll('.logic-btn');
+  if(btns) {
+    btns[0].className = 'logic-btn' + (val==='and'?' sel-and':'');
+    btns[1].className = 'logic-btn' + (val==='or'?' sel-or':'');
+  }
+  updatePreview();
+}
+
+function upCond(ruleId, i, key, val) {
+  const r = rules.find(x => x.id === ruleId); if(!r || !r.conditions[i]) return;
+  r.conditions[i][key] = val;
+  updateStats(); updatePreview();
+}
+
+function addCond(ruleId) {
+  const r = rules.find(x => x.id === ruleId); if(!r) return;
+  r.conditions.push({placeholder:'', type:'equals', value:''});
+  const el = document.getElementById('conds_'+ruleId);
+  if(el) el.innerHTML = r.conditions.map((c,idx) => renderCond(ruleId,c,idx)).join('');
+  updateStats(); updatePreview();
+}
+
+function removeCond(ruleId, i) {
+  const r = rules.find(x => x.id === ruleId); if(!r) return;
+  r.conditions.splice(i, 1);
+  const el = document.getElementById('conds_'+ruleId);
+  if(el) el.innerHTML = r.conditions.map((c,idx) => renderCond(ruleId,c,idx)).join('');
+  updateStats(); updatePreview();
+}
+
+function removeRule(id) {
+  const r = rules.find(x => x.id === id);
+  if(r) deletedRuleStack.push(JSON.parse(JSON.stringify(r)));
+  rules = rules.filter(x => x.id !== id);
+  renderRules(); updatePreview();
+  showToast('✕ Rule deleted — Ctrl+Z to undo', 'warn');
+}
+
+function duplicateRule(id, e) {
+  e.stopPropagation();
+  const r = rules.find(x => x.id === id);
+  if(!r) return;
+  const newRule = JSON.parse(JSON.stringify(r));
+  newRule.id = ++ruleId;
+  newRule.key = r.key + '_copy';
+  newRule.open = true;
+  newRule.ci = rules.length % COLORS.length;
+  const idx = rules.findIndex(x => x.id === id);
+  rules.splice(idx + 1, 0, newRule);
+  renderRules(); updatePreview();
+  setTimeout(() => document.getElementById('rc_'+newRule.id)?.scrollIntoView({behavior:'smooth',block:'nearest'}), 60);
+  showToast('⎘ Rule duplicated', 'info');
+}
+
+function changeRuleColor(id, ci) {
+  const r = rules.find(x => x.id === id); if(!r) return;
+  r.ci = ci;
+  const el = document.getElementById('rc_'+id);
+  if(el) {
+    const dot = el.querySelector('.rule-dot');
+    if(dot) dot.style.background = COLORS[ci % COLORS.length];
+    el.querySelectorAll('.color-swatch').forEach((sw, idx) => {
+      sw.classList.toggle('selected', idx === ci);
+    });
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && e.key === 'z') {
+    e.preventDefault();
+    if(deletedRuleStack.length > 0) {
+      const r = deletedRuleStack.pop();
+      rules.push(r);
+      renderRules(); updatePreview();
+      showToast('↩ Rule restored', 'success');
+    }
+  }
+});
+
+function renderRules() {
+  const el = document.getElementById('rulesList');
+  const toolbar = document.getElementById('rulesToolbar');
+  if(!rules.length) {
+    el.innerHTML = `<div class="rules-empty"><div class="empty-emoji">⚙</div><p>No rules yet.<br>Use a template above or click "+ Add new rule" to get started.</p></div>`;
+    toolbar.style.display = 'none';
+  } else {
+    el.innerHTML = getDisplayRules().map(r => renderRule(r)).join('');
+    toolbar.style.display = 'block';
+    setupDragDrop();
+  }
+  updateStats();
+  const q = document.getElementById('searchRules')?.value || '';
+  if(q) filterRules(q);
+}
+
+function getDisplayRules() {
+  let arr = [...rules];
+  if(currentSort === 'alpha') arr.sort((a,b) => a.key.localeCompare(b.key));
+  else if(currentSort === 'priority') arr.sort((a,b) => b.priority - a.priority);
+  else if(currentSort === 'conds') arr.sort((a,b) => b.conditions.length - a.conditions.length);
+  return arr;
+}
+
+function renderRule(r) {
+  const condsHtml = r.conditions.map((c,i) => renderCond(r.id,c,i)).join('');
+  const hasReturn = r.returnValue.trim() !== '';
+  const dot = COLORS[r.ci % COLORS.length];
+  const colorSwatches = COLORS.map((c,i) =>
+    `<div class="color-swatch${r.ci===i?' selected':''}" style="background:${c}" onclick="changeRuleColor(${r.id},${i})" title="Color ${i+1}"></div>`
+  ).join('');
+  return `
+<div class="rule-card ${r.open?'open':''} ${r.enabled===false?'disabled':''}" id="rc_${r.id}" draggable="true" data-rid="${r.id}">
+  <div class="rule-header">
+    <div class="rule-drag" title="Drag to reorder">⠿</div>
+    <div class="rule-dot-col" onclick="toggleRule(${r.id})">
+      <div class="rule-dot" style="background:${dot}"></div>
+    </div>
+    <div class="rule-header-text" onclick="toggleRule(${r.id})">
+      <strong>${esc(r.key||'my_rule')}</strong>
+      <span>${esc(r.placeholder||'—')}</span>
+    </div>
+    <div class="rule-priority-badge">P:<span>${r.priority}</span></div>
+    <div class="rule-enabled-toggle" onclick="toggleRuleEnabled(${r.id},event)" title="${r.enabled!==false?'Click to disable':'Click to enable'}">
+      <div class="rule-en-dot ${r.enabled===false?'off':''}"></div>
+      <div class="rule-en-label">${r.enabled===false?'OFF':'ON'}</div>
+    </div>
+    <div class="rule-open-btn" onclick="toggleRule(${r.id})">${r.open ? 'COLLAPSE ▲' : 'EXPAND ▼'}</div>
+  </div>
+  <div class="rule-body">
+    <div class="dlabel">Rule identity</div>
+    <div class="field">
+      <div class="field-label"><strong>Rule key (ID)</strong> <span class="tag tag-req">required</span></div>
+      <div class="field-hint">A unique machine-friendly name for this rule. Used as the key in config.yml.</div>
+      <input class="mono" type="text" value="${esc(r.key)}" placeholder="my_rule" oninput="upRule(${r.id},'key',this.value)">
+      <div class="field-note">Use only: <code>letters</code> <code>numbers</code> <code>_</code> <code>-</code></div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <div class="field-label">
+          <strong>Priority</strong> <span class="tag tag-opt">number</span>
+          <div class="tt"><div class="tt-i">?</div><div class="tt-b">If multiple rules match the same placeholder, the one with the HIGHEST priority wins.</div></div>
+        </div>
+        <input type="number" value="${r.priority}" min="0" max="1000" oninput="upRule(${r.id},'priority',this.value)">
+        <div class="field-note">Default: <code>0</code> &nbsp;·&nbsp; Override: use higher number</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><strong>Color label</strong></div>
+        <div class="field-hint">Visual color for this rule card.</div>
+        <div class="color-picker-row">${colorSwatches}</div>
+      </div>
+    </div>
+
+    <div class="dlabel">Target placeholder</div>
+    <div class="field">
+      <div class="field-label"><strong>Placeholder to intercept</strong> <span class="tag tag-req">required</span></div>
+      <div class="field-hint">The PlaceholderAPI placeholder you want to override — include the % signs.</div>
+      <input class="mono" type="text" value="${esc(r.placeholder)}" placeholder="%player_health%" oninput="upRule(${r.id},'placeholder',this.value)">
+      <div class="field-note">e.g. <code>%player_health%</code> &nbsp;<code>%vault_balance%</code> &nbsp;<code>%player_world%</code></div>
+    </div>
+
+    <div class="dlabel">Return value</div>
+    <div class="field">
+      <div class="field-label"><strong>What to show when conditions are met</strong> <span class="tag tag-req">required</span></div>
+      <div class="field-hint">This text replaces the original placeholder value when all conditions below are true.</div>
+      <input type="text" value="${esc(r.returnValue)}" placeholder="e.g. CRITICAL, VIP, Rich..." oninput="upRule(${r.id},'returnValue',this.value)">
+      <div class="result-preview" data-rrp="${r.id}" ${hasReturn?'':'style="display:none"'}>→ Result: <code>${esc(r.returnValue)}</code></div>
+    </div>
+
+    <div class="dlabel">Conditions</div>
+    <div class="field-hint" style="margin-bottom:12px;font-family:var(--mono);font-size:0.72rem;color:var(--text2)">Should <strong>all</strong> conditions be true (AND), or just <strong>at least one</strong> (OR)?</div>
+    <div class="logic-row">
+      <button class="logic-btn ${r.logic==='and'?'sel-and':''}" onclick="setLogic(${r.id},'and')">
+        AND<small>every condition must be met</small>
+      </button>
+      <button class="logic-btn ${r.logic==='or'?'sel-or':''}" onclick="setLogic(${r.id},'or')">
+        OR<small>at least one must be met</small>
+      </button>
+    </div>
+
+    <div id="conds_${r.id}">${condsHtml}</div>
+    <button class="btn btn-add-cond" onclick="addCond(${r.id})">＋ Add condition</button>
+
+    <div class="btn-row">
+      <button class="btn btn-dupe" onclick="duplicateRule(${r.id},event)">⎘ Duplicate</button>
+      <button class="btn btn-danger" onclick="removeRule(${r.id})">✕ Remove rule</button>
+    </div>
+  </div>
+</div>`;
+}
+
+function renderCond(ruleId, c, i) {
+  const opts = COND_TYPES.map(t => `<option value="${t.v}" ${c.type===t.v?'selected':''}>${t.l}</option>`).join('');
+  return `
+<div class="cond-item">
+  <div class="cond-head">
+    <div class="cond-num">${i+1}</div>
+    <strong>condition_${i+1}</strong>
+    ${i>0 ? `<button class="btn btn-danger" style="margin-left:auto;padding:4px 10px;font-size:0.68rem" onclick="removeCond(${ruleId},${i})">✕</button>` : ''}
+  </div>
+  <div class="cond-grid">
+    <div>
+      <span class="clabel">Placeholder to check <span style="color:var(--amber);font-size:0.58rem">(empty = rule's placeholder)</span></span>
+      <input class="cinput" type="text" value="${esc(c.placeholder)}" placeholder="leave empty or %player_world%" oninput="upCond(${ruleId},${i},'placeholder',this.value)">
+    </div>
+    <div class="cond-arrow">→</div>
+    <div>
+      <span class="clabel">Comparison type</span>
+      <select class="cselect" onchange="upCond(${ruleId},${i},'type',this.value)">${opts}</select>
+    </div>
+  </div>
+  <div>
+    <span class="clabel">Value to compare against</span>
+    <input class="cinput" style="font-weight:600" type="text" value="${esc(c.value)}" placeholder="5  |  nether  |  vip" oninput="upCond(${ruleId},${i},'value',this.value)">
+    <div class="field-note" style="margin-top:5px">Numbers: <code>5</code> &nbsp; Text: <code>nether</code> &nbsp; Boolean: <code>true</code> / <code>false</code></div>
+  </div>
+</div>`;
+}
+
+function updateStats() {
+  const total = rules.length;
+  const enabled = rules.filter(r => r.enabled !== false);
+  const disabled = total - enabled.length;
+  const totalConds = enabled.reduce((a,r) => a + r.conditions.filter(c=>c.value.trim()).length, 0);
+  const uniquePhs = new Set(enabled.map(r => r.placeholder).filter(Boolean)).size;
+
+  document.getElementById('statRow').style.display = total ? 'flex' : 'none';
+  document.getElementById('statRules').textContent = enabled.length;
+  document.getElementById('statConds').textContent = totalConds;
+  document.getElementById('statPhs').textContent = uniquePhs;
+  document.getElementById('statDisabled').textContent = disabled;
+
+  const badge = document.getElementById('ruleCountBadge');
+  if(total) { badge.style.display='block'; badge.textContent = total + (total===1?' rule':' rules'); }
+  else badge.style.display='none';
+}
+
+function filterRules(q) {
+  const lower = q.toLowerCase().trim();
+  let shown = 0;
+  document.querySelectorAll('.rule-card[data-rid]').forEach(el => {
+    const rid = parseInt(el.dataset.rid);
+    const r = rules.find(x => x.id === rid);
+    if(!r) return;
+    const match = !lower || r.key.toLowerCase().includes(lower) || r.placeholder.toLowerCase().includes(lower) || r.returnValue.toLowerCase().includes(lower);
+    el.classList.toggle('search-hidden', !match);
+    if(match) shown++;
+  });
+  const count = document.getElementById('searchCount');
+  if(count) count.textContent = lower ? `${shown}/${rules.length}` : '';
+}
+
+function sortRules(type) {
+  currentSort = type;
+  ['sortDefault','sortAlpha','sortPriority','sortConds'].forEach(id => {
+    document.getElementById(id)?.classList.remove('active');
+  });
+  const map = {default:'sortDefault', alpha:'sortAlpha', priority:'sortPriority', conds:'sortConds'};
+  document.getElementById(map[type])?.classList.add('active');
+  renderRules();
+}
+
+function setupDragDrop() {
+  document.querySelectorAll('.rule-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragSrcId = parseInt(card.dataset.rid);
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      document.querySelectorAll('.rule-card').forEach(c => c.classList.remove('drag-over'));
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault();
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const targetId = parseInt(card.dataset.rid);
+      if(dragSrcId === targetId) return;
+      const srcIdx = rules.findIndex(r => r.id === dragSrcId);
+      const tgtIdx = rules.findIndex(r => r.id === targetId);
+      if(srcIdx < 0 || tgtIdx < 0) return;
+      const [moved] = rules.splice(srcIdx, 1);
+      rules.splice(tgtIdx, 0, moved);
+      renderRules(); updatePreview();
+    });
+    const handle = card.querySelector('.rule-drag');
+    if(handle) {
+      handle.addEventListener('mousedown', () => card.setAttribute('draggable','true'));
+      card.addEventListener('mouseup', () => {});
+    }
+  });
+}
+
+function generateYAML() {
+  const debug  = document.getElementById('cbDebug').checked;
+  const ttl    = document.getElementById('cacheTtl').value || '5';
+  const maxSz  = document.getElementById('cacheMax').value || '100';
+  const useSQL = document.getElementById('cbMySQL').checked;
+  const host   = document.getElementById('mysqlHost').value || 'localhost';
+  const port   = document.getElementById('mysqlPort').value || '3306';
+  const db     = document.getElementById('mysqlDb').value || 'placeholderoverride';
+  const user   = document.getElementById('mysqlUser').value || 'root';
+  const pass   = document.getElementById('mysqlPass').value || '';
+
+  let y = '';
+  y += '# ┌─────────────────────────────────────────────┐\n';
+  y += '# │    MyPlaceholderOverride — config.yml       │\n';
+  y += '# │    Generated with MPO Config Builder        │\n';
+  y += '# └─────────────────────────────────────────────┘\n\n';
+  y += '# ── Storage ────────────────────────────────────\n';
+  y += 'storage:\n';
+  y += '  use-mysql: ' + useSQL + '\n';
+  y += '  mysql:\n';
+  y += '    host: ' + host + '\n';
+  y += '    port: ' + port + '\n';
+  y += '    database: ' + db + '\n';
+  y += '    username: ' + user + '\n';
+  y += '    password: "' + pass + '"\n\n';
+  y += '# ── Cache ──────────────────────────────────────\n';
+  y += 'cache-ttl-seconds: ' + ttl + '\n';
+  y += 'cache-max-size-per-player: ' + maxSz + '\n\n';
+  y += '# ── Debug ──────────────────────────────────────\n';
+  y += 'debug: ' + debug + '\n\n';
+
+  const valid = rules.filter(r => r.enabled !== false && r.conditions.some(c => c.value.trim()));
+  const disabled = rules.filter(r => r.enabled === false && r.conditions.some(c => c.value.trim()));
+
+  if(!valid.length && !disabled.length) {
+    y += '# ── Rules ──────────────────────────────────────\n';
+    y += '# No rules yet — add them in the Config Builder!\n';
+    y += 'rules: {}\n';
+  } else {
+    if(disabled.length > 0) {
+      y += '# ── Disabled Rules (' + disabled.length + ') ─────────────────────\n';
+      disabled.forEach(r => {
+        const sk = (r.key||'my_rule').replace(/[^a-zA-Z0-9_\-]/g,'_');
+        y += '# disabled: ' + sk + '\n';
+      });
+      y += '\n';
+    }
+    y += '# ── Rules ──────────────────────────────────────\n';
+    y += 'rules:\n';
+    valid.forEach(r => {
+      const sk = (r.key||'my_rule').replace(/[^a-zA-Z0-9_\-]/g,'_');
+      const vc = r.conditions.filter(c => c.value.trim());
+      y += '\n  # ' + sk + '\n';
+      y += '  ' + sk + ':\n';
+      y += '    placeholder: "' + r.placeholder + '"\n';
+      y += '    priority: ' + r.priority + '\n';
+      y += '    logic: "' + r.logic + '"\n';
+      y += '    return_value: "' + r.returnValue + '"\n';
+      y += '    conditions:\n';
+      vc.forEach((c,i) => {
+        const ph = c.placeholder.trim() || r.placeholder;
+        y += '      condition' + (i+1) + ':\n';
+        y += '        placeholder: "' + ph + '"\n';
+        y += '        type: "' + c.type + '"\n';
+        y += '        value: "' + c.value + '"\n';
+      });
+    });
+  }
+  return y;
+}
+
+function updatePreview() {
+  const pre = document.getElementById('previewCode');
+  if(pre) pre.innerHTML = highlight(generateYAML());
+  updateProgress();
+  validateConfig(true);
+}
+
+function highlight(y) {
+  return y.split('\n').map(line => {
+    if(line.trim().startsWith('#')) return '<span class="y-com">'+esc(line)+'</span>';
+    const m = line.match(/^(\s*)([\w\-]+)(:)(.*)$/);
+    if(m) {
+      const v = m[4]; let vh = '';
+      if(!v.trim()) vh = '';
+      else if(/^\s*true/.test(v))  vh = v.replace('true',  '<span class="y-t">true</span>');
+      else if(/^\s*false/.test(v)) vh = v.replace('false', '<span class="y-f">false</span>');
+      else if(/^\s*\d+/.test(v))   vh = v.replace(/(\d+)/, '<span class="y-num">$1</span>');
+      else vh = v.replace(/"([^"]*)"/, '<span class="y-str">"$1"</span>');
+      return esc(m[1]) + '<span class="y-key">'+esc(m[2])+'</span>' + esc(m[3]) + vh;
+    }
+    return esc(line);
+  }).join('\n');
+}
+
+function updateProgress() {
+  const hasRules = rules.filter(r => r.enabled !== false && r.conditions.some(c => c.value.trim())).length > 0;
+  const hasAnyRule = rules.length > 0;
+  document.getElementById('ps1').className = 'hero-step ' + (hasAnyRule ? 'done' : 'now');
+  document.getElementById('ps2').className = 'hero-step ' + (hasAnyRule && !hasRules ? 'now' : hasRules ? 'done' : '');
+  document.getElementById('ps3').className = 'hero-step ' + (hasRules ? 'now' : '');
+  const pct = hasRules ? 100 : (hasAnyRule ? 66 : 5);
+  const bar = document.getElementById('progressBar');
+  if(bar) bar.style.width = pct + '%';
+}
+
+function validateConfig(silent = false) {
+  const issues = [];
+  const keys = new Set();
+
+  rules.forEach(r => {
+    const sk = (r.key||'').replace(/[^a-zA-Z0-9_\-]/g,'_');
+    if(!r.key) issues.push({type:'error', msg:`A rule has no key (ID). Set a unique key.`});
+    else if(keys.has(sk)) issues.push({type:'error', msg:`Duplicate key: "${sk}". Each rule needs a unique key.`});
+    else keys.add(sk);
+    if(!r.placeholder) issues.push({type:'warn', msg:`Rule "${sk}" has no placeholder set.`});
+    if(!r.returnValue.trim()) issues.push({type:'warn', msg:`Rule "${sk}" has no return value.`});
+    const emptyConds = r.conditions.filter(c => !c.value.trim()).length;
+    if(emptyConds > 0) issues.push({type:'info', msg:`Rule "${sk}" has ${emptyConds} empty condition(s) — these will be skipped.`});
+  });
+
+  if(!silent) {
+    const el = document.getElementById('validateResults');
+    if(!el) return;
+    if(!issues.length) {
+      el.innerHTML = `<div class="notice notice-tip">✓ <strong>All clear!</strong> No issues found in your configuration.</div>`;
+    } else {
+      el.innerHTML = issues.map(i => {
+        const cls = i.type === 'error' ? 'notice-err' : i.type === 'warn' ? 'notice-warn' : 'notice-info';
+        const icon = i.type === 'error' ? '✕' : i.type === 'warn' ? '⚠' : 'ℹ';
+        return `<div class="notice ${cls}">${icon} ${i.msg}</div>`;
+      }).join('');
+    }
+  }
+  return issues.filter(i => i.type === 'error').length === 0;
+}
+
+function downloadYAML() {
+  const blob = new Blob([generateYAML()], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'config.yml';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('✓ config.yml downloaded!', 'success');
+}
+
+function copyYAML() {
+  navigator.clipboard.writeText(generateYAML()).then(() => {
+    showToast('⎘ Copied to clipboard!', 'info');
+  }).catch(() => {
+    showToast('⚠ Could not copy — try Ctrl+A on the preview', 'warn');
+  });
+}
+
+function clearAll() {
+  if(rules.length === 0) { showToast('○ No rules to clear', 'info'); return; }
+  showModal('Clear all rules?', `This will remove all ${rules.length} rule(s). This cannot be undone (Ctrl+Z only undoes single deletes).`, () => {
+    deletedRuleStack = [...deletedRuleStack, ...rules];
+    rules = [];
+    renderRules(); updatePreview();
+    showToast('✕ All rules cleared', 'warn');
+  });
+}
+
+function handleDragOver(e) { e.preventDefault(); document.getElementById('importZone').classList.add('drag-active'); }
+function handleDragLeave() { document.getElementById('importZone').classList.remove('drag-active'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('importZone').classList.remove('drag-active');
+  const file = e.dataTransfer.files[0];
+  if(file) readFile(file);
+}
+function importFromFile(e) {
+  const file = e.target.files[0];
+  if(file) readFile(file);
+}
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => parseAndImport(ev.target.result);
+  reader.readAsText(file);
+}
+function importFromPaste() {
+  const txt = document.getElementById('importPaste').value.trim();
+  if(!txt) { showToast('⚠ Paste some YAML first', 'warn'); return; }
+  parseAndImport(txt);
+}
+
+function parseAndImport(txt) {
+  try {
+    const imported = [];
+    const lines = txt.split('\n');
+    let inRules = false, currentKey = null, currentObj = null, inCond = false, currentCond = null, condName = null;
+
+    const ttlMatch = txt.match(/cache-ttl-seconds:\s*(\d+)/);
+    const maxMatch = txt.match(/cache-max-size-per-player:\s*(\d+)/);
+    const debugMatch = txt.match(/debug:\s*(true|false)/);
+    const sqlMatch = txt.match(/use-mysql:\s*(true|false)/);
+    if(ttlMatch) document.getElementById('cacheTtl').value = ttlMatch[1];
+    if(maxMatch) document.getElementById('cacheMax').value = maxMatch[1];
+    if(debugMatch) {
+      const cb = document.getElementById('cbDebug');
+      const row = document.getElementById('togDebug');
+      cb.checked = debugMatch[1] === 'true';
+      row.classList.toggle('on', cb.checked);
+    }
+    if(sqlMatch) {
+      const cb = document.getElementById('cbMySQL');
+      const row = document.getElementById('togMySQL');
+      cb.checked = sqlMatch[1] === 'true';
+      row.classList.toggle('on', cb.checked);
+      toggleMySQLSection();
+    }
+
+    const rulesIdx = lines.findIndex(l => /^rules:/.test(l.trim()));
+    if(rulesIdx >= 0) {
+      for(let i = rulesIdx + 1; i < lines.length; i++) {
+        const line = lines[i];
+        const indent = line.match(/^(\s*)/)[1].length;
+        const trimmed = line.trim();
+        if(!trimmed || trimmed.startsWith('#')) continue;
+        if(indent === 2) {
+          if(currentObj) imported.push(currentObj);
+          currentKey = trimmed.replace(':','').trim();
+          currentObj = { key: currentKey, placeholder:'', priority:0, logic:'and', returnValue:'', enabled:true, open:false, ci:imported.length%COLORS.length, conditions:[] };
+          currentCond = null; condName = null; inCond = false;
+        } else if(indent === 4 && currentObj) {
+          const [k, ...rest] = trimmed.split(':');
+          const v = rest.join(':').trim().replace(/^"|"$/g,'');
+          if(k === 'placeholder') currentObj.placeholder = v;
+          else if(k === 'priority') currentObj.priority = parseInt(v)||0;
+          else if(k === 'logic') currentObj.logic = v;
+          else if(k === 'return_value') currentObj.returnValue = v;
+        } else if(indent === 6 && currentObj) {
+          const tname = trimmed.replace(':','').trim();
+          if(tname.startsWith('condition')) {
+            if(currentCond) currentObj.conditions.push(currentCond);
+            currentCond = { placeholder:'', type:'equals', value:'' };
+            condName = tname;
+          }
+        } else if(indent === 8 && currentCond) {
+          const [k, ...rest] = trimmed.split(':');
+          const v = rest.join(':').trim().replace(/^"|"$/g,'');
+          if(k === 'placeholder') currentCond.placeholder = v;
+          else if(k === 'type') currentCond.type = v;
+          else if(k === 'value') currentCond.value = v;
+        }
+      }
+      if(currentCond) currentObj?.conditions.push(currentCond);
+      if(currentObj) imported.push(currentObj);
+    }
+
+    if(imported.length === 0 && rulesIdx < 0) {
+      showToast('⚠ Could not find any rules in this file', 'warn');
+      return;
+    }
+
+    rules = imported.map(r => ({...r, id: ++ruleId}));
+    renderRules(); updatePreview();
+    switchTab('preview');
+    showToast(`✓ Imported ${imported.length} rule(s)!`, 'success');
+  } catch(err) {
+    showToast('✕ Import failed: ' + err.message, 'warn');
+  }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    const names = ['preview','validate','import'];
+    btn.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1));
+  if(panel) panel.classList.add('active');
+  if(name === 'validate') validateConfig(false);
+}
+
+let modalCallback = null;
+function showModal(title, msg, cb) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').textContent = msg;
+  modalCallback = cb;
+  const m = document.getElementById('confirmModal');
+  m.style.display = 'flex';
+  document.getElementById('modalConfirm').onclick = () => { closeModal(); if(modalCallback) modalCallback(); };
+}
+function closeModal() { document.getElementById('confirmModal').style.display = 'none'; }
+
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast toast-' + type + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function openImportModal() {
+  document.getElementById('cardDownload').classList.add('open');
+  switchTab('import');
+  setTimeout(() => document.getElementById('cardDownload').scrollIntoView({behavior:'smooth'}), 60);
+}
+
+['cacheTtl','cacheMax','mysqlHost','mysqlPort','mysqlDb','mysqlUser','mysqlPass']
+  .forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('input', updatePreview); });
+
+renderRules();
+updatePreview();
+</script>
+</body>
+</html>
